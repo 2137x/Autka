@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.roborazzi)
 }
 
 // Release signing is opt-in: the CI release job exports these env vars after decoding a
@@ -71,6 +72,13 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // Robolectric (JVM screenshots) needs merged resources on the unit-test classpath.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
@@ -138,4 +146,12 @@ dependencies {
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    // JVM screenshots (Roborazzi on Robolectric): `./gradlew :app:recordRoborazziDebug`
+    // writes PNGs to app/build/outputs/roborazzi without an emulator.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.test.manifest)
 }
