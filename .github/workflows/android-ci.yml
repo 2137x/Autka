@@ -60,7 +60,7 @@ jobs:
           name: autka-screenshots-jvm
           path: app/build/outputs/roborazzi/*.png
           retention-days: 14
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Upload lint report
         if: always()
@@ -104,12 +104,13 @@ jobs:
 
       - name: Check crashes and first screen
         # pidof above already fails if the process died (Java or native). Here: no crash record
-        # for com.autka, and the listings screen (search field) is on screen.
+        # for com.autka, and the listings screen (search field, en-US emulator) is on screen.
         run: |
           if grep -E "^(--------- beginning of crash|.*(FATAL EXCEPTION|Fatal signal))" -A3 out/logcat.txt | grep -q com.autka; then
             echo "::error::com.autka crashed, see logcat.txt"; exit 1
           fi
           grep -q 'package="com.autka"' out/ui.xml || { echo "::error::Autka not in foreground"; exit 1; }
+          grep -q 'Search make, model' out/ui.xml || { echo "::error::listings search field not shown"; exit 1; }
 
       - name: Upload emulator screenshots
         if: always()
